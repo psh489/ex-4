@@ -26,8 +26,12 @@ jobs:
 
       - name: Deploy from S3 to EC2 using SSM
         run: |
+          # 1. Secret의 쉼표(,)를 공백( )으로 변환하여 AWS CLI가 인식 가능한 형식으로 만듭니다.
+          IDS=$(echo "${{ secrets.EC2_INSTANCE_ID }}" | tr ',' ' ')
+          
+          # 2. 변환된 IDS 변수를 사용하여 SSM 명령을 전달합니다.
           aws ssm send-command \
-            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+            --instance-ids $IDS \
             --document-name "AWS-RunShellScript" \
             --parameters 'commands=[
               "sudo aws s3 sync s3://${{ secrets.S3_BUCKET_NAME }}/html/ /usr/share/nginx/html/ --delete",
